@@ -21,7 +21,7 @@ load_dotenv()
 # Configuration
 # ---------------------------------------------------------------------------
 
-DEFAULT_MODEL = "llama-3.1-8b-instant"
+DEFAULT_MODEL = "openai/gpt-oss-20b"
 DEFAULT_API_BASE = "https://api.groq.com/openai/v1"
 MAX_RETRIES = 3
 INITIAL_BACKOFF_SECONDS = 0.5
@@ -45,12 +45,12 @@ class APIConfig:
             GITFAST_API_BASE    — Optional. Override the API base URL.
             GITFAST_MODEL       — Optional. Override the default model.
         """
-        api_key = os.environ.get("GROQ_API_KEY", "")
+        api_key = os.environ.get("CEREBRAS_API_KEY") or os.environ.get("GROQ_API_KEY", "")
         if not api_key:
             raise EnvironmentError(
-                "GROQ_API_KEY is not set. "
-                "Export it in your shell or add it to a .env file.\n"
-                "  export GROQ_API_KEY=gsk_..."
+                "Neither CEREBRAS_API_KEY nor GROQ_API_KEY is set. "
+                "Export one in your shell or add it to your .env file.\n"
+                "  export GROQ_API_KEY=gsk_... or CEREBRAS_API_KEY=csk-..."
             )
 
         api_base = os.environ.get("GITFAST_API_BASE", DEFAULT_API_BASE).rstrip("/")

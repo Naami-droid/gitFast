@@ -28,10 +28,32 @@ from . import __version__
 
 def _build_parser() -> argparse.ArgumentParser:
     """Build the argument parser with all subcommands."""
+    # Shared options between root and subcommands
+    common_parser = argparse.ArgumentParser(add_help=False)
+    common_parser.add_argument(
+        "--verbose", "-v",
+        action="store_true",
+        default=False,
+        help="Enable verbose/debug output.",
+    )
+    common_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=False,
+        help="Show prompts and diff without calling the API.",
+    )
+    common_parser.add_argument(
+        "--model", "-m",
+        type=str,
+        default=None,
+        help="Override the LLM model (default: openai/gpt-oss-20b).",
+    )
+
     parser = argparse.ArgumentParser(
         prog="gitfast",
         description="⚡ GitFast — AI-powered commit messages & PR reviews at lightning speed.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
+        parents=[common_parser],
         epilog=(
             "Examples:\n"
             "  gitfast commit              Generate a commit message from staged changes\n"
@@ -46,30 +68,13 @@ def _build_parser() -> argparse.ArgumentParser:
         action="version",
         version=f"gitfast {__version__}",
     )
-    parser.add_argument(
-        "--verbose", "-v",
-        action="store_true",
-        default=False,
-        help="Enable verbose/debug output.",
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        default=False,
-        help="Show prompts and diff without calling the API.",
-    )
-    parser.add_argument(
-        "--model", "-m",
-        type=str,
-        default=None,
-        help="Override the LLM model (default: llama-3.1-8b-instant).",
-    )
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # ── commit subcommand ───────────────────────────────────────────────
     commit_parser = subparsers.add_parser(
         "commit",
+        parents=[common_parser],
         help="Generate a Conventional Commit message from staged changes.",
     )
     commit_parser.add_argument(
@@ -88,6 +93,7 @@ def _build_parser() -> argparse.ArgumentParser:
     # ── review subcommand ───────────────────────────────────────────────
     review_parser = subparsers.add_parser(
         "review",
+        parents=[common_parser],
         help="Generate an AI code review for a GitHub Pull Request.",
     )
     review_parser.add_argument(

@@ -19,7 +19,7 @@ class TestAPIConfig:
         with patch.dict("os.environ", {"GROQ_API_KEY": "test_key"}, clear=True):
             config = APIConfig.from_env()
             assert config.api_key == "test_key"
-            assert config.model == "llama-3.1-8b-instant"
+            assert config.model == "openai/gpt-oss-20b"
             assert "groq.com" in config.api_base
 
     def test_custom_model_from_env(self):
