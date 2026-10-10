@@ -2,12 +2,12 @@
 
 **AI-powered commit messages & PR reviews at lightning speed.**
 
-GitFast is a dual-mode Git copilot that uses blazing-fast 8B models (via [Groq](https://groq.com)) to solve two problems developers hate:
+GitFast is a dual-mode Git copilot that uses blazing-fast sub-8B models (via [Groq](https://groq.com) or [Cerebras](https://cerebras.ai)) to solve two problems developers hate:
 
-1. **Writing commit messages** → `gitfast commit` generates perfect Conventional Commits from your staged changes in under 1 second
+1. **Writing commit messages** → `gitfast commit` generates perfect Conventional Commits from your staged changes in under 1.5 seconds
 2. **Reviewing PRs manually** → Drop a GitHub Action that auto-reviews every PR for code smells in under 2 seconds
 
-> One tool. Two modes. Same 8B model. Different prompts. Sub-second speed.
+> One tool. Two modes. Same fast model. Sub-second speed.
 
 ---
 
@@ -15,7 +15,7 @@ GitFast is a dual-mode Git copilot that uses blazing-fast 8B models (via [Groq](
 
 ```bash
 # Install
-pip install -e .
+pip install git+https://github.com/Naami-droid/gitFast.git
 
 # Set your Groq API key
 export GROQ_API_KEY=gsk_your_key_here
@@ -25,12 +25,12 @@ git add .
 gitfast commit
 ```
 
-That's it. You'll see something like:
+That's it. You'll see:
 
 ```
-  ⚡ Generated in 0.3s (llama-3.1-8b-instant)
+  ⚡ Generated in 1.07s (allam-2-7b)
 
-  feat(auth): add JWT refresh token rotation
+  feat(cli): add support for generating commit messages from staged changes
 ```
 
 ---
@@ -79,67 +79,62 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: your-username/gitfast@main
+      - uses: Naami-droid/gitFast@main
         with:
           groq_api_key: ${{ secrets.GROQ_API_KEY }}
+          model: allam-2-7b
 ```
 
 **5 lines of config. Zero maintenance. Every PR gets an AI review in <2 seconds.**
 
 ---
 
-## 🏗️ Architecture
+## ⚡ Supported Models & Providers
 
-```
-                    ┌─────────────────────────┐
-                    │    generate_response()   │
-                    │  (shared core engine)    │
-                    └─────────┬───────────────┘
-                              │
-                    ┌─────────┴───────────┐
-                    │   diff_processor()   │
-                    │  (clean & truncate)  │
-                    └─────────┬───────────┘
-                              │
-              ┌───────────────┼───────────────┐
-              │                               │
-     ┌────────▼────────┐            ┌─────────▼────────┐
-     │  commit_mode    │            │   review_mode    │
-     │  git diff       │            │  GitHub API      │
-     │  --staged       │            │  PR diff + post  │
-     └─────────────────┘            └──────────────────┘
-```
+GitFast supports any OpenAI-compatible API, optimized for fast models:
 
-80% of the code is shared. The two modes only differ in:
-- **Input source**: `git diff --staged` vs. GitHub PR API
-- **System prompt**: "generate a commit" vs. "review this code"
-- **Output target**: terminal vs. PR comment
+| Provider | Model ID | Parameters | Latency | Status / Best For |
+|---|---|---|---|---|
+| **Groq** | `allam-2-7b` | **7 Billion** | ~1.0s | ✅ **Active on Groq (Default sub-8B)** |
+| **Groq** | `openai/gpt-oss-20b` | 20 Billion | ~1.4s | ✅ High reasoning & accuracy |
+| **Groq** | `qwen/qwen3.8-27b` | 27 Billion | ~1.5s | ✅ Coding & complex diffs |
+| **Cerebras** | `llama3.1-8b` | **8 Billion** | ~0.5s | ⚡ 1,800+ tokens/sec |
+| **Ollama** | `llama3.1:8b` / `qwen2.5-coder:7b` | **7-8 Billion** | Local | 🔒 100% offline & local |
+
+To switch models, use the `--model` flag or set `GITFAST_MODEL`:
+```bash
+gitfast commit --model allam-2-7b
+gitfast commit --model openai/gpt-oss-20b
+```
 
 ---
 
 ## 🔑 Configuration
 
+Configure via environment variables or a local `.env` file:
+
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `GROQ_API_KEY` | ✅ | — | Groq API key |
-| `GITHUB_TOKEN` | CI only | Auto-injected | GitHub token for PR ops |
-| `GITFAST_MODEL` | ❌ | `llama-3.1-8b-instant` | LLM model override |
-| `GITFAST_API_BASE` | ❌ | `https://api.groq.com/openai/v1` | Custom API endpoint |
-| `GITFAST_MAX_DIFF_CHARS` | ❌ | `12000` | Max diff size |
+| `GROQ_API_KEY` | ✅ (or Cerebras) | — | Groq API key (`gsk_...`) |
+| `CEREBRAS_API_KEY` | Optional | — | Cerebras API key (`csk-...`) |
+| `GITFAST_MODEL` | ❌ | `allam-2-7b` | LLM model override |
+| `GITFAST_API_BASE` | ❌ | `https://api.groq.com/openai/v1` | Custom endpoint (e.g., `https://api.cerebras.ai/v1`) |
+| `GITFAST_MAX_DIFF_CHARS` | ❌ | `12000` | Max diff size for truncation |
+| `GITHUB_TOKEN` | CI only | Auto-injected | GitHub token for PR comments |
 
 ---
 
-## 🧠 Why 8B Models?
+## 🧠 Why Sub-8B Models?
 
 GitFast is built on a key insight: **commit messages and code reviews don't need GPT-4.**
 
 | Task | Model | Speed | Quality |
 |---|---|---|---|
-| Commit message | `llama-3.1-8b` on Groq | ~0.3s | ✅ Excellent |
-| PR review | `llama-3.1-8b` on Groq | ~0.8s | ✅ Good enough |
-| Same tasks | GPT-4o | ~3-8s | ✅ Slightly better |
+| Commit message | `allam-2-7b` / `llama3.1-8b` | ~1.0s | ✅ Excellent |
+| PR review | `allam-2-7b` / `openai/gpt-oss-20b` | ~1.7s | ✅ Thorough & structured |
+| Same tasks | GPT-4o / Claude 3.5 | ~5-15s | ⚠️ Too slow for local flow |
 
-The speed difference is the entire product. A 0.3s commit message feels instant. An 8s one feels broken. Hosted 8B models on Groq/Cerebras make real-time git tooling possible where frontier models cannot.
+The speed difference is the entire product. A 1.0s commit message feels instant in your terminal workflow. A 10s delay breaks developer flow. Fast models make real-time git hygiene painless.
 
 ---
 
@@ -167,9 +162,9 @@ Review options:
 ## 📦 Installation
 
 ```bash
-# From source (recommended for hackathon)
-git clone https://github.com/your-username/gitfast.git
-cd gitfast
+# From source
+git clone https://github.com/Naami-droid/gitFast.git
+cd gitFast
 pip install -e .
 
 # With clipboard support
