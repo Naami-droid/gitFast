@@ -38,10 +38,12 @@ class GitHubClient:
         self.token = token
         self.repo = repo
         self.headers = {
-            "Authorization": f"Bearer {token}",
             "Accept": "application/vnd.github.v3+json",
             "X-GitHub-Api-Version": "2022-11-28",
+            "User-Agent": "GitFast-Copilot",
         }
+        if token:
+            self.headers["Authorization"] = f"Bearer {token}"
 
     @classmethod
     def from_env(cls) -> "GitHubClient":

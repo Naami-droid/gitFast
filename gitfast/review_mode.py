@@ -107,11 +107,9 @@ async def review_pull_request(
             sys.exit(1)
 
         token = os.environ.get("GITHUB_TOKEN", "")
-        if not token:
-            print(_c(RED, "✗ GITHUB_TOKEN is not set."))
-            print(_c(DIM, "  Export a Personal Access Token with repo scope:"))
-            print(_c(DIM, "    export GITHUB_TOKEN=ghp_..."))
-            sys.exit(1)
+        if not token and post_comment and not dry_run:
+            print(_c(YELLOW, "  ⚠ GITHUB_TOKEN not set; printing review to stdout (comment posting disabled)."))
+            post_comment = False
 
         gh_client = GitHubClient(token=token, repo=repo)
     else:
