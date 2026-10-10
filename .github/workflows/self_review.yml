@@ -1,0 +1,23 @@
+name: GitFast Self-Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  review:
+    name: AI Code Review
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run GitFast Review
+        uses: ./  # Dogfood — use self as the action
+        with:
+          groq_api_key: ${{ secrets.GROQ_API_KEY }}

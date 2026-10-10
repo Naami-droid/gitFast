@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gitfast"
+version = "1.0.0"
+description = "⚡ AI-powered commit messages & PR reviews at lightning speed"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "GitFast Team"},
+]
+keywords = ["git", "ai", "commit", "review", "conventional-commits", "groq", "llm"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Version Control :: Git",
+    "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = [
+    "httpx>=0.25.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+clipboard = ["pyperclip>=1.8.0"]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+]
+
+[project.scripts]
+gitfast = "gitfast.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/gitfast/gitfast"
+Repository = "https://github.com/gitfast/gitfast"
+Issues = "https://github.com/gitfast/gitfast/issues"
+
+[tool.setuptools.packages.find]
+include = ["gitfast*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

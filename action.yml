@@ -1,0 +1,41 @@
+name: 'GitFast PR Review'
+description: 'AI-powered PR code review using blazing-fast 8B models. Checks for code smells and validates Conventional Commit PR titles.'
+author: 'GitFast'
+
+branding:
+  icon: 'zap'
+  color: 'purple'
+
+inputs:
+  groq_api_key:
+    description: 'API key for Groq (or compatible provider) for LLM inference'
+    required: true
+  model:
+    description: 'LLM model to use for review'
+    required: false
+    default: 'llama-3.1-8b-instant'
+  max_diff_chars:
+    description: 'Maximum diff size (in chars) before truncation'
+    required: false
+    default: '12000'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install GitFast dependencies
+      run: pip install -r ${{ github.action_path }}/requirements.txt
+      shell: bash
+
+    - name: Run GitFast PR Review
+      run: python -m gitfast review --post-comment
+      shell: bash
+      env:
+        GROQ_API_KEY: ${{ inputs.groq_api_key }}
+        GITHUB_TOKEN: ${{ github.token }}
+        GITFAST_MODEL: ${{ inputs.model }}
+        GITFAST_MAX_DIFF_CHARS: ${{ inputs.max_diff_chars }}
